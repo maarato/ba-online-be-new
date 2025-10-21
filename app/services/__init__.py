@@ -1,0 +1,1 @@
+# Paquete de servicios (conexiones externas, LLMs, etc.)

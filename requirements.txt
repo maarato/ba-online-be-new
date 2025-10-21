@@ -1,0 +1,4 @@
+Flask>=2.3,<4
+openai>=1,<2
+groq>=0.5,<1
+python-dotenv>=1,<2
