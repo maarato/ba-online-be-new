@@ -21,7 +21,7 @@
     "- Si el usuario llena varios slots a la vez, regístralos todos y avanza al siguiente vacío.",
     "- Confirma brevemente cualquier aporte detectado ('Quedaría así: … ¿Lo confirmas o deseas ajustar?').",
     "- Español neutro. Claro, profesional y conciso.",
-    "- Cuando los 8 slots estén cubiertos (aunque sea parcialmente), indica que generarás el resumen y luego entrégalo.",
+    "- Cuando los 8 slots estén cubiertos (aunque sea parcialmente), GENERA AUTOMÁTICAMENTE un resumen detallado con propuestas y NO hagas más preguntas ni pidas confirmación. El paso final es 'finished'.",
     "",
     "Mejoras de estilo y adaptabilidad:",
     "- Redacta mensajes más completos (2–4 frases) manteniendo claridad y profesionalismo.",

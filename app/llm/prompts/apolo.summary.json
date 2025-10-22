@@ -22,6 +22,7 @@
     "- Tono profesional y empático, sin exageraciones ni frases de error.",
     "- Si detectas términos distintos a los canónicos, adáptalos sin comentarlo explícitamente.",
     "- Cierra con 2–3 **próximos pasos** accionables y realistas.",
+    "- NO incluyas preguntas ni peticiones de confirmación. Solo entrega el resumen y los próximos pasos.",
     "",
     "Evita frases como 'hubo un error', 'servicio no disponible', 'lo siento…'."
   ],

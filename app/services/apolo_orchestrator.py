@@ -8,14 +8,14 @@ from app.services.chat_store import get_apolo_state, set_apolo_state
 PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "llm", "prompts")
 
 DEFAULT_SLOTS = [
-    "empresa",
-    "problema_oportunidad",
-    "objetivo",
-    "alcance",
-    "plazo",
-    "presupuesto",
-    "stakeholders",
-    "criterios_exito",
+    "idea_negocio",
+    "clientes_objetivos",
+    "region_operacion",
+    "market_scope",
+    "modelo_ingresos",
+    "tipo_producto",
+    "timeline",
+    "capital_inicial",
 ]
 
 
@@ -45,7 +45,7 @@ def _default_state() -> Dict[str, Optional[str]]:
 def _merge_updates(state: Dict[str, Optional[str]], updates: Dict[str, Optional[str]]) -> Dict[str, Optional[str]]:
     merged = {**state}
     for k, v in (updates or {}).items():
-        if k in merged and v not in (None, ""):
+        if k in DEFAULT_SLOTS and v not in (None, ""):
             merged[k] = v
     return merged
 
@@ -74,7 +74,7 @@ def _extract_updates(provider: str, history: List[Dict[str, str]], state: Dict[s
 
 
 def _missing_slots(state: Dict[str, Optional[str]]) -> List[str]:
-    return [k for k, v in state.items() if v in (None, "")] 
+    return [k for k in DEFAULT_SLOTS if state.get(k) in (None, "")]
 
 
 def _get_next(provider: str, history: List[Dict[str, str]], state: Dict[str, Optional[str]]) -> str:
@@ -82,6 +82,16 @@ def _get_next(provider: str, history: List[Dict[str, str]], state: Dict[str, Opt
     messages = [{"role": "system", "content": system}]
     messages += history
     messages.append({"role": "user", "content": f"Estado actual (JSON): {json.dumps(state, ensure_ascii=False)}"})
+
+    client = LLMClient(provider=provider)
+    return client.chat(messages=messages, temperature=0.2)
+
+
+def _get_final(provider: str, history: List[Dict[str, str]], state: Dict[str, Optional[str]]) -> str:
+    system = _load_prompt_text("apolo.final.json")
+    messages = [{"role": "system", "content": system}]
+    messages += history
+    messages.append({"role": "user", "content": f"Estado final (JSON): {json.dumps(state, ensure_ascii=False)}"})
 
     client = LLMClient(provider=provider)
     return client.chat(messages=messages, temperature=0.2)
@@ -131,7 +141,7 @@ def run_apolo(session_id: str, history: List[Dict[str, str]], provider: str) -> 
         message = _guard_output(provider, message, step="asking")
         return {"message": message, "step": "asking", "summary": None}
     else:
-        # 2b) summary → respuesta directa
-        message = _get_summary(provider, history, state)
-        message = _guard_output(provider, message, step="summary")
-        return {"message": message, "step": "summary", "summary": message}
+        # 2b) final validator → resumen extendido y cierre
+        final_text = _get_final(provider, history, state)
+        final_text = _guard_output(provider, final_text, step="finished")
+        return {"message": final_text, "step": "finished", "summary": final_text}
