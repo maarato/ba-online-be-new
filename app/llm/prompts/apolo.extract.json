@@ -20,6 +20,8 @@
     "- Si un slot no aparece en el mensaje, no lo incluyas.",
     "- No inventes datos.",
     "- Mantén cada valor en 1–3 líneas máximo.",
+    "- Si el estado tiene nombres distintos (p.ej., 'empresa', 'alcance', etc.), ADÁPTATE: mapea inteligentemente a los 8 nombres canónicos definidos arriba.",
+    "- No hagas comentarios sobre desalineaciones de nombres; solo devuelve 'updates' con los nombres canónicos.",
     "",
     "Salida (estrictamente JSON):",
     "{",

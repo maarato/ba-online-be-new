@@ -24,8 +24,15 @@ def _load_prompt_text(filename: str) -> str:
     with open(path, "r", encoding="utf-8") as f:
         try:
             data = json.load(f)
-            # Si el archivo es JSON con campo 'system' o 'instructions'
-            return data.get("system") or data.get("instructions") or json.dumps(data, ensure_ascii=False)
+            # Si el archivo es JSON con campo 'system'/'instructions' o 'content' array
+            if isinstance(data, dict):
+                if "system" in data:
+                    return data["system"]
+                if "instructions" in data:
+                    return data["instructions"]
+                if "content" in data and isinstance(data["content"], list):
+                    return "\n".join([str(x) for x in data["content"]])
+            return json.dumps(data, ensure_ascii=False)
         except Exception:
             f.seek(0)
             return f.read()
@@ -90,6 +97,16 @@ def _get_summary(provider: str, history: List[Dict[str, str]], state: Dict[str, 
     return client.chat(messages=messages, temperature=0.2)
 
 
+def _guard_output(provider: str, text: str, step: str) -> str:
+    guard = _load_prompt_text("apolo.output.guard.json")
+    messages = [
+        {"role": "system", "content": guard},
+        {"role": "user", "content": f"Paso: {step}\n\nMensaje original:\n{text}"},
+    ]
+    client = LLMClient(provider=provider)
+    return client.chat(messages=messages, temperature=0.0)
+
+
 def run_apolo(session_id: str, history: List[Dict[str, str]], provider: str) -> Dict[str, str]:
     """Orquestador MULTI-CALL.
 
@@ -111,8 +128,10 @@ def run_apolo(session_id: str, history: List[Dict[str, str]], provider: str) -> 
     if missing:
         # 2a) next → respuesta directa
         message = _get_next(provider, history, state)
+        message = _guard_output(provider, message, step="asking")
         return {"message": message, "step": "asking", "summary": None}
     else:
         # 2b) summary → respuesta directa
         message = _get_summary(provider, history, state)
+        message = _guard_output(provider, message, step="summary")
         return {"message": message, "step": "summary", "summary": message}

@@ -18,8 +18,10 @@
     "8) capital_inicial",
     "",
     "Guías de redacción:",
-    "- 1–2 frases máximo.",
-    "- Ejemplo entre paréntesis si ayuda.",
+    "- Redacta una confirmación más completa (2–3 frases) cuando el turno anterior aportó información, reconociendo lo dicho y encajándolo en el slot.",
+    "- Pregunta: una sola, breve, concreta y accionable. Añade ejemplo si ayuda.",
+    "- Evita frases de error o indisponibilidad (p.ej., 'hubo un error', 'servicio no disponible', 'lo siento…').",
+    "- Si el estado usa nombres distintos a los canónicos, ADÁPTATE silenciosamente. No comentes desalineaciones; decide el próximo slot usando el orden canónico.",
     "- No pidas más de un dato a la vez.",
     "",
     "Salida (JSON):",
@@ -27,7 +29,7 @@
     "  \"finalizar\": <true|false>,",
     "  \"slot_actual\": \"<nombre_slot_o_null>\",",
     "  \"pregunta\": \"<si finalizar=false, aquí va la pregunta>\",",
-    "  \"confirmacion_breve\": \"<si el turno anterior aportó algo, una reformulación corta para confirmar o vacío>\"",
+    "  \"confirmacion_breve\": \"<si el turno anterior aportó algo, una reformulación 2–3 frases o vacío>\"",
     "}"
   ],
   "temperature": 0.2
