@@ -1,0 +1,23 @@
+{
+  "name": "generate_summary",
+  "role": "user",
+  "content": [
+    "Genera un **resumen ejecutivo** de la idea de negocio, usando el estado final a continuación. Si un campo quedó vacío, indica 'No especificado'.",
+    "",
+    "Estado final:",
+    "{{conversation_state_json}}",
+    "",
+    "Formato de salida (texto, español neutro):",
+    "- Idea de negocio: ...",
+    "- Clientes objetivos: ...",
+    "- Región de operación: ...",
+    "- Alcance futuro: ...",
+    "- Modelo de ingresos: ...",
+    "- Tipo de producto: ...",
+    "- Timeline estimado: ...",
+    "- Capital inicial: ...",
+    "",
+    "Cierra con 2–3 **próximos pasos** accionables."
+  ],
+  "temperature": 0.2
+}

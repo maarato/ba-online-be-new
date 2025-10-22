@@ -1,7 +1,9 @@
 import os
+import json
 from flask import Blueprint, jsonify, request
 from app.services.llm_client import LLMClient
 from app.services.chat_store import ensure_session, add_message, get_messages, reset_session
+from app.services.apolo_orchestrator import run_apolo
 
 chat_bp = Blueprint("chat_bp", __name__)
 
@@ -45,15 +47,21 @@ def chat_stream():
     messages = [{"role": "system", "content": system_prompt}] + history
 
     try:
-        client = LLMClient(provider="groq")
-        text = client.chat(messages=messages, temperature=0.2)
-        # Guardar respuesta del asistente
-        add_message(session_id, "assistant", text)
+        provider = os.getenv("LLM_PROVIDER", "groq").lower()
+
+        # Orquestador Apolo - respuesta directa
+        result = run_apolo(session_id=session_id, history=messages[1:], provider=provider)
+        
+        # Guardar respuesta completa del asistente
+        message = result.get("message", "")
+        add_message(session_id, "assistant", message)
+        
+        # Respuesta JSON directa
         return jsonify({
-            "message": text,
-            "summary": None,
-            "step": "asking",
-        }), 200
+            "message": message,
+            "summary": result.get("summary"),
+            "step": result.get("step", "asking")
+        })
     except Exception as e:
         return jsonify({
             "error": "llm_call_failed",

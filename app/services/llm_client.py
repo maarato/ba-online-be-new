@@ -63,6 +63,46 @@ class LLMClient:
         )
         return resp.choices[0].message.content
 
+    def chat_stream(
+        self,
+        messages: List[Dict[str, str]],
+        model: Optional[str] = None,
+        temperature: float = 0.3,
+        max_tokens: Optional[int] = None,
+    ):
+        """Genera chunks de texto de la respuesta en streaming."""
+        mdl = model or self.default_model
+        if self.provider == "openai":
+            resp = self.client.chat.completions.create(
+                model=mdl,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=True,
+            )
+            for event in resp:
+                try:
+                    delta = event.choices[0].delta
+                    if delta and getattr(delta, "content", None):
+                        yield delta.content
+                except Exception:
+                    continue
+        elif self.provider == "groq":
+            resp = self.client.chat.completions.create(
+                model=mdl,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                stream=True,
+            )
+            for event in resp:
+                try:
+                    delta = event.choices[0].delta
+                    if delta and getattr(delta, "content", None):
+                        yield delta.content
+                except Exception:
+                    continue
+
 
 def call_llm(
     provider: str,
