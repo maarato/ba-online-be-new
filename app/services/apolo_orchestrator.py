@@ -117,14 +117,21 @@ def _guard_output(provider: str, text: str, step: str) -> str:
     return client.chat(messages=messages, temperature=0.0)
 
 
+def _first_intro_message() -> str:
+    return (
+        "Hola, soy Apolo, tu Business Analyst online. Estoy aquí para ayudarte a estructurar y dar forma a tu idea de proyecto, "
+        "recopilando información clave en 8 etapas. Te haré preguntas breves y puntuales para avanzar de manera ordenada."
+    )
+
+
 def run_apolo(session_id: str, history: List[Dict[str, str]], provider: str) -> Dict[str, str]:
     """Orquestador MULTI-CALL.
 
     1) extract → updates → merge → persistir state
     2) Si faltan slots → next → confirmación breve + pregunta
-       Si todos completos → summary → resumen final
+       Si todos completos → final → resumen extendido
 
-    Retorna dict con {"message": texto_final, "step": "asking"|"summary", "summary": texto_o_null}
+    Retorna dict con {"message": texto_final, "step": "asking"|"done", "summary": texto_o_null}
     """
     state = get_apolo_state(session_id) or _default_state()
 
@@ -134,14 +141,18 @@ def run_apolo(session_id: str, history: List[Dict[str, str]], provider: str) -> 
     set_apolo_state(session_id, state)
 
     missing = _missing_slots(state)
+    is_first_response = not any(m.get("role") == "assistant" for m in history)
 
     if missing:
         # 2a) next → respuesta directa
         message = _get_next(provider, history, state)
+        if is_first_response:
+            intro = _first_intro_message()
+            message = intro + "\n\n" + message
         message = _guard_output(provider, message, step="asking")
         return {"message": message, "step": "asking", "summary": None}
     else:
         # 2b) final validator → resumen extendido y cierre
         final_text = _get_final(provider, history, state)
-        final_text = _guard_output(provider, final_text, step="finished")
-        return {"message": final_text, "step": "finished", "summary": final_text}
+        final_text = _guard_output(provider, final_text, step="done")
+        return {"message": final_text, "step": "done", "summary": final_text}
