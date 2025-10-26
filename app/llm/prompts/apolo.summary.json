@@ -1,0 +1,31 @@
+{
+  "name": "generate_summary",
+  "role": "user",
+  "content": [
+    "Genera un **resumen ejecutivo** de la idea de negocio, usando el estado final a continuación. Si un campo quedó vacío, indica 'No especificado'.",
+    "",
+    "Estado final:",
+    "{{conversation_state_json}}",
+    "",
+    "Formato de salida (texto, español neutro):",
+    "- Idea de negocio: ...",
+    "- Usuarios objetivos: ...",
+    "- Región de operación: ...",
+    "- Alcance futuro: ...",
+    "- Modelo de ingresos: ...",
+    "- Tipo de producto: ...",
+    "- Integraciones: ...",
+    "- Timeline estimado: ...",
+    "- Capital inicial: ...",
+    "",
+    "Ampliación y estilo:",
+    "- Redacta un resumen más desarrollado (6–10 líneas) cuando la información lo permita, manteniendo claridad y utilidad.",
+    "- Tono profesional y empático, sin exageraciones ni frases de error.",
+    "- Si detectas términos distintos a los canónicos, adáptalos sin comentarlo explícitamente.",
+    "- Cierra con 2–3 **próximos pasos** accionables y realistas, e incluye al final una invitación a contactar al equipo de desarrollo para avanzar (p.ej., 'Si lo deseas, puedo coordinar el contacto con nuestro equipo de desarrollo para iniciar el MVP').",
+    "- NO incluyas preguntas ni peticiones de confirmación. Solo entrega el resumen y los próximos pasos.",
+    "",
+    "Evita frases como 'hubo un error', 'servicio no disponible', 'lo siento…'."
+  ],
+  "temperature": 0.2
+}

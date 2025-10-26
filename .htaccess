@@ -1,0 +1,12 @@
+PassengerBaseURI "/topconsultants"
+PassengerAppRoot "/home/ilanugpp/topconsultants"
+PassengerPython "/home/ilanugpp/virtualenv/topconsultants/3.11/bin/python"
+PassengerStartupFile "passenger_wsgi.py"
+PassengerAppType wsgi
+PassengerEnabled on
+PassengerRestartDir "/home/ilanugpp/topconsultants/tmp"
+
+# Bloquea acceso directo a código python desde web
+<FilesMatch "\.(py|pyc|pyo)$">
+  Require all denied
+</FilesMatch>

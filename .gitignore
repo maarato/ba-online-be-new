@@ -1,0 +1,11 @@
+# Ignorar cachés de Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Variables de entorno
+.env
+
+# Datos generados por la app
+/data/

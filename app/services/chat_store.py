@@ -2,6 +2,7 @@ import os
 import sqlite3
 from typing import List, Dict, Optional
 from datetime import datetime, timezone
+import json
 
 
 def _iso_now() -> str:
@@ -45,6 +46,12 @@ def init_db() -> None:
                 content TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 FOREIGN KEY (session_id) REFERENCES sessions(session_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS apolo_state (
+                session_id TEXT PRIMARY KEY,
+                state_json TEXT NOT NULL,
+                updated_at TEXT NOT NULL
             );
             """
         )
@@ -100,6 +107,38 @@ def get_messages(session_id: str, limit: Optional[int] = None) -> List[Dict[str,
     return [{"role": r["role"], "content": r["content"]} for r in rows]
 
 
+def get_apolo_state(session_id: str) -> Optional[Dict]:
+    with _connect() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT state_json FROM apolo_state WHERE session_id = ?", (session_id,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        try:
+            return json.loads(row["state_json"])  # type: ignore
+        except Exception:
+            return None
+
+
+def set_apolo_state(session_id: str, state: Dict) -> None:
+    payload = json.dumps(state, ensure_ascii=False)
+    with _connect() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO apolo_state (session_id, state_json, updated_at) VALUES (?, ?, ?)\n             ON CONFLICT(session_id) DO UPDATE SET state_json=excluded.state_json, updated_at=excluded.updated_at",
+            (session_id, payload, _iso_now()),
+        )
+        conn.commit()
+
+
+def delete_apolo_state(session_id: str) -> int:
+    with _connect() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM apolo_state WHERE session_id = ?", (session_id,))
+        conn.commit()
+        return cur.rowcount
+
+
 def reset_session(session_id: str) -> Dict[str, int | bool]:
     """Elimina el historial de conversación y la fila de sesión.
 
@@ -116,6 +155,8 @@ def reset_session(session_id: str) -> Dict[str, int | bool]:
         cur.execute("DELETE FROM messages WHERE session_id = ?", (session_id,))
         cur.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
         session_deleted = cur.rowcount
+        cur.execute("DELETE FROM apolo_state WHERE session_id = ?", (session_id,))
+        apolo_deleted = cur.rowcount
         conn.commit()
 
     return {"had_conversation": msg_count > 0, "messages_deleted": msg_count, "session_deleted": session_deleted}
