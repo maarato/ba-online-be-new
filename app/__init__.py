@@ -41,8 +41,10 @@ def create_app():
     # Blueprints
     from .routes.chat import chat_bp
     from .routes.brief import brief_bp
+    from .routes.contacts import contacts_bp
     app.register_blueprint(chat_bp, url_prefix="/chat")
     app.register_blueprint(brief_bp, url_prefix="/brief")
+    app.register_blueprint(contacts_bp)
 
     @app.get("/")
     def index():

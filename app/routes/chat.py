@@ -2,8 +2,9 @@ import os
 import json
 from flask import Blueprint, jsonify, request
 from app.services.llm_client import LLMClient
-from app.services.chat_store import ensure_session, add_message, get_messages, reset_session
+from app.services.chat_store import ensure_session, add_message, get_messages, reset_session, get_apolo_state
 from app.services.apolo_orchestrator import run_apolo
+from app.services.summary_service import summary_service
 
 chat_bp = Blueprint("chat_bp", __name__)
 
@@ -23,11 +24,13 @@ def chat_stream():
     Body JSON:
       - sessionId: string (camelCase)
       - message: string (acepta también 'messeage' por compatibilidad)
+      - deviceId: string (opcional; se usará para almacenar el resumen final)
     Usa historial en SQLite, llama Groq y retorna estructura requerida.
     """
     data = request.get_json(silent=True) or {}
     session_id = data.get("sessionId") or data.get("session_id")
     message = data.get("message") or data.get("messeage")
+    device_id = data.get("deviceId") or data.get("device_id")
 
     if not session_id or not message:
         return jsonify({
@@ -56,11 +59,27 @@ def chat_stream():
         message = result.get("message", "")
         add_message(session_id, "assistant", message)
         
+        # Si el flujo terminó, persistir el resumen en MySQL
+        step = result.get("step", "asking")
+        stored_summary_id = None
+        if step == "done":
+            # Recuperar estado canónico y preparar payload
+            state = get_apolo_state(session_id) or {}
+            summary_payload = {
+                "type": "final_summary",
+                "final_text": message,
+                "state": state,
+            }
+            # Fallback de device_id: usa session_id si no se envió
+            device_identifier = device_id or session_id
+            stored_summary_id = summary_service.create_summary(device_identifier, summary_payload)
+        
         # Respuesta JSON directa
         return jsonify({
             "message": message,
             "summary": result.get("summary"),
-            "step": result.get("step", "asking")
+            "step": step,
+            "storedSummaryId": stored_summary_id
         })
     except Exception as e:
         return jsonify({
