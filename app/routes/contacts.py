@@ -1,9 +1,31 @@
 from flask import Blueprint, request, jsonify
 from app.services.contact_service import contact_service
+from flask_cors import CORS
+import os
 
-contacts_bp = Blueprint('contacts', __name__, url_prefix='/api/contacts')
+contact_bp = Blueprint('contact', __name__, url_prefix='/api/contact')
 
-@contacts_bp.route('/', methods=['POST'])
+# Configurar CORS específicamente para este blueprint
+default_allowed = [
+    "http://localhost",
+    "http://localhost:3000",
+    "https://alexsaurio.com",
+    "https://www.alexsaurio.com",
+    "https://topconsultants.io",
+    "https://www.topconsultants.io",
+]
+env_allowed = os.environ.get("ALLOWED_ORIGINS")
+allowed_origins = [o.strip() for o in env_allowed.split(",") if o.strip()] if env_allowed else default_allowed
+CORS(
+    contact_bp,
+    resources={r"/*": {"origins": allowed_origins}},
+    supports_credentials=True,
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    expose_headers=["Content-Type"],
+)
+
+@contact_bp.route('/', methods=['POST'])
 def create_contact():
     """
     Crear un nuevo contacto
@@ -45,7 +67,7 @@ def create_contact():
     except Exception as e:
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
-@contacts_bp.route('/<int:contact_id>', methods=['GET'])
+@contact_bp.route('/<int:contact_id>', methods=['GET'])
 def get_contact(contact_id):
     """Obtener un contacto por ID"""
     try:
@@ -59,7 +81,7 @@ def get_contact(contact_id):
     except Exception as e:
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
-@contacts_bp.route('/email/<email>', methods=['GET'])
+@contact_bp.route('/email/<email>', methods=['GET'])
 def get_contact_by_email(email):
     """Obtener un contacto por email"""
     try:
@@ -73,7 +95,7 @@ def get_contact_by_email(email):
     except Exception as e:
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
-@contacts_bp.route('/device/<device_id>', methods=['GET'])
+@contact_bp.route('/device/<device_id>', methods=['GET'])
 def get_contacts_by_device(device_id):
     """Obtener todos los contactos de un dispositivo"""
     try:
@@ -87,7 +109,7 @@ def get_contacts_by_device(device_id):
     except Exception as e:
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
-@contacts_bp.route('/<int:contact_id>', methods=['PUT'])
+@contact_bp.route('/<int:contact_id>', methods=['PUT'])
 def update_contact(contact_id):
     """
     Actualizar un contacto existente
@@ -125,7 +147,7 @@ def update_contact(contact_id):
     except Exception as e:
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
-@contacts_bp.route('/<int:contact_id>', methods=['DELETE'])
+@contact_bp.route('/<int:contact_id>', methods=['DELETE'])
 def delete_contact(contact_id):
     """Eliminar un contacto por ID"""
     try:
@@ -144,7 +166,7 @@ def delete_contact(contact_id):
     except Exception as e:
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
-@contacts_bp.route('/', methods=['GET'])
+@contact_bp.route('/', methods=['GET'])
 def get_all_contacts():
     """
     Obtener todos los contactos con paginación
@@ -177,7 +199,7 @@ def get_all_contacts():
     except Exception as e:
         return jsonify({'error': f'Error interno: {str(e)}'}), 500
 
-@contacts_bp.route('/search', methods=['GET'])
+@contact_bp.route('/search', methods=['GET'])
 def search_contacts():
     """
     Buscar contactos por término
