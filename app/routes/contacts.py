@@ -54,8 +54,20 @@ def create_contact():
             if not data.get(field):
                 return jsonify({'error': f'El campo {field} es requerido'}), 400
         
+        # Si ya existe un contacto con ese email, actualizar en lugar de crear
+        existing = contact_service.get_contact_by_email(data.get('email'))
+        if existing:
+            updated = contact_service.update_contact(existing['id'], data)
+            if updated:
+                return jsonify({
+                    'message': 'Contacto existente actualizado exitosamente',
+                    'contact_id': existing['id']
+                }), 200
+            else:
+                return jsonify({'error': 'No fue posible actualizar el contacto existente'}), 500
+
+        # Si no existe, crear nuevo
         contact_id = contact_service.create_contact(data)
-        
         if contact_id:
             return jsonify({
                 'message': 'Contacto creado exitosamente',
